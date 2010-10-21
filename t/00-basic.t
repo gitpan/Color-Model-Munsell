@@ -11,7 +11,9 @@ BEGIN {
 diag( "Testing Color::Model::Munsell $Color::Model::Munsell::VERSION, Perl $], $^X" );
 
 my $red = Color::Model::Munsell->new("4.0R 3.5/11.0");
+my $red_ = Munsell("4.0R 3.5/11.0");
 
+ok("$red" eq "$red_",        "Munsell()     - red, $red");
 ok("$red" eq "4R 3.5/11",    "stringify     - red, $red");
 ok($red->ischromatic,        "ischromatic() - red, $red");
 ok(!$red->isneutral,         "isneutral()   - red, $red");

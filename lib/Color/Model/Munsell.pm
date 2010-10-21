@@ -1,7 +1,7 @@
 # =============================================================================
 package Color::Model::Munsell;
 # -----------------------------------------------------------------------------
-$Color::Model::Munsell::VERSION = '0.01';
+$Color::Model::Munsell::VERSION = '0.02';
 # -----------------------------------------------------------------------------
 use warnings;
 use strict;
@@ -18,11 +18,11 @@ Chromatic color;
     $mun = Color::Model::Munsell->new("7PB", 4, 10);
     print "$mum is chromatic color" if !$mun->isneutral;
 
-Nuetral grays;
+Neutral grays;
 
     $mun = Color::Model::Munsell->new("N 4.5");
     $mun = Color::Model::Munsell->new("N", 9);
-    print "$mum is nuetral color" if $mun->isneutral;
+    print "$mum is neutral color" if $mun->isneutral;
 
 =cut
 
@@ -30,7 +30,7 @@ Nuetral grays;
 use Carp qw();
 use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $VERSION);
 use base qw(Exporter);
-@EXPORT    = qw( degree undegree );
+@EXPORT    = qw( Munsell degree undegree );
 @EXPORT_OK = qw( PUREWHITE PUREBLACK REALWHITE REALBLACK @hue_order %hue_number );
 %EXPORT_TAGS = (
     symbols  => [ qw( @hue_order %hue_number ) ],
@@ -47,7 +47,10 @@ our %hue_number = (
 our $ERROR;
 
 # =============================================================================
-=head1 CONSTRUCTOR
+
+=head1 CONSTRUCTORS
+
+=head2 new()
 
     # with Munsell color specifying
     $m = Color::Model::Munsell->new("9R 5.5/14");
@@ -57,18 +60,16 @@ our $ERROR;
     $m = Color::Model::Munsell->new("7PB", 4, 10);
     $m = Color::Model::Munsell->new("N", 9);
 
-If number part of hue is 0, it becomes 10.0 of previous hue color on the color
-circle.
+If number part of hue is 0, it becomes 10.0 of previous hue color on the circle.
 
 Value(as Lightness) or chroma has thier range;
-
     0 <= value  <= 10.0  # if 0 or 10, it will be regraded as black or white
     0 <= chroma          # if 0, it will be gray
 
 and these number will be rounded up to the tenth's place with sprintf().
 
 If constructor returns undef, it means some error occurs. When this case, Check
-$Color::Model::Munsell::ERROR that has a reason of the error.
+$Color::Model::Munsell::ERROR that have a reason of an error.
 
 =cut
 
@@ -169,16 +170,46 @@ sub new
 }
 
 
+=head2 Munsell()
+
+Munsell() is defalut exporting subroutine which calls new().
+
+    $m = Munsell("9R 5.5/14");
+
+=cut
+
+sub Munsell
+{
+    return __PACKAGE__->new(@_);
+}
+
+
 # =============================================================================
+
 =head1 CONSTANTS
 
-There are some constants which make an object of black or white, using tag
-":vertexes" or ":all".
+There are some constants which makes black or white object. Use tag ":vertexes"
+or ":all".
 
-    PUREWHITE();        # return an object of "N 10.0"
-    PUREBLACK();        # return an object of "N 0.0"
-    REALWHITE();        # return an object of "N 9.5"
-    REALBLACK();        # return an object of "N 1.0"
+=over
+
+=item PUREWHITE()
+
+return an object of "N 10.0"
+
+=item PUREBLACK();
+
+return an object of "N 0.0"
+
+=item REALWHITE();
+
+return an object of "N 9.5"
+
+=item REALBLACK();
+
+return an object of "N 1.0"
+
+=back
 
 =cut
 
@@ -190,17 +221,63 @@ sub REALBLACK { __PACKAGE__->new('N 1.0') }
 
 =head1 METHODS
 
-    $m->code();         # Munsell code like "5R 9.5/14"
-    $m->ischromatic();  # boolean color is chromatic or not
-    $m->isneutral();    # boolean color is nuegray or not
-    $m->hue();          # hue
-    $m->hueCol();       # color name of hue; R,YR,Y,GY,G,BG,B,PB,P,RP or N
-    $m->hueStep();      # number part of hue (gray returns undef)
-    $m->value();        # value
-    $m->lightness();    # same as value
-    $mun->chroma();     # chroma (gray returns undef)
-    $mun->saturation(); # same as chroma
-    $m->degree();       # see degree()
+Object C<Color::Model::Munsell> has methods below.
+
+=over
+
+=item code()
+
+Returns Munsell code like "5R 10/14" or "N 4.5".
+
+=item ischromatic()
+
+Returns 1 if object is chromatic, or 0.
+
+=item isneutral()
+
+Returns 1 if object is neutral color, or 0.
+
+=item isblack()
+
+Return 1 if value is equal or lesser than 1.0, or 0
+
+=item iswhite()
+
+Return 1 if value is equal or greater than 9.5, or 0
+
+=item hue()
+
+Returns hue code like "5R" or "N".
+
+=item hueCol()
+
+Returns color sign of hue; R,YR,Y,GY,G,BG,B,PB,P,RP or N
+
+=item hueStep();
+
+Returns number of hue (gray returns undef)
+
+=item value()
+
+Returns Munsell value.
+
+=item lightness()
+
+Same as value()
+
+=item chroma()
+
+Returns Munsell chroma.
+
+=item saturation()
+
+Same as chroma().
+
+=item degree()
+
+See degree() below.
+
+=back
 
 =cut
 
@@ -213,6 +290,7 @@ sub value       { $_[0]->{value};    }
 sub lightness   { $_[0]->{value};    }
 sub chroma      { $_[0]->{chroma};   }
 sub saturation  { $_[0]->{chroma};   }
+
 sub code
 {
     my $self = shift;
@@ -222,16 +300,6 @@ sub code
         return sprintf('N %.1f',$self->{value});
     }
 }
-
-
-=head2 isblack(), iswhite();
-
-    $m->isblack();      # return 1 if value is equal or lesser than 1.0, or 0
-    $m->iswhite();      # return 1 if value is equal or greater than 9.5, or 0
-
-Note that these returns a result whether object is chromatic.
-
-=cut
 
 sub isblack
 {
@@ -247,13 +315,18 @@ sub iswhite
 
 
 # =============================================================================
-=head1 FUNCTIONS
 
-=head2 degree($huecode), $m->degree();
+=head1 SUBROUTINES
 
-Function degree() return a serial hue number from hue code of chromatic color,
-considering 10.0RP is 0, 10R to be 10, 10YR 20, ..., and ends 9.9RP as 99.9.
+=head2 degree()
+
+    print $m->degree();
+    print degree("7.5B");
+
+Subroutine or object method C<degree()> return a serial hue number, considering
+10.0RP is 0, 10R is 10, 10YR is 20, ..., and ends 9.9RP as 99.9.
 This will be useful to get radians of Muncell color circle.
+If object is neutral, this returns undef.
 
 =cut
 
@@ -263,7 +336,9 @@ sub degree
         Carp::croak('Usage: degree($huecode) or $m->degree()');
     }
     my $self = shift;
-    if ( ref($self) ne __PACKAGE__ ){
+    if ( ref($self) eq __PACKAGE__ ){
+        return undef unless defined($self->{chroma});
+    } else {
         $self = __PACKAGE__->new($self,1,1);
         Carp::croak($ERROR) unless defined($self);
     }
@@ -274,10 +349,11 @@ sub degree
     }
 }
 
-=head2 undegree($degreenum);
+=head2 undegree();
 
-Function undegree() return a hue code from a serial hue number which is from
-0.0 to 100.0.
+    print undegree();
+
+Function undegree() return a hue code from a serial hue number.
 
 =cut
 
@@ -305,6 +381,7 @@ sub undegree
 
 
 # =============================================================================
+
 =head1 OPERATOR OVERLOAD
 
 Stringify operator of this module, Color::Model::Munsell, is prepared. If
@@ -330,34 +407,6 @@ sub _stringify {
 Please report any bugs or feature requests to C<bug-color-model-munsell at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Color-Model-Munsell>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
-=head1 SUPPORT
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc Color::Model::Munsell
-
-You can also look for information at:
-
-=over 4
-
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Color-Model-Munsell>
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/Color-Model-Munsell>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Color-Model-Munsell>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/Color-Model-Munsell/>
-
-=back
 
 =head1 AUTHOR
 

@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Color-Model-Munsell
-version:            0.01
+version:            0.02
 abstract:           Color model of Munsell color system
 author:
     - Takahiro Onodera <ong@garakuta.net>
